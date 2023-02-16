@@ -1,0 +1,267 @@
+---
+title: "metaphlan_4_summary_stats_QC"
+author: "Trishla Sinha"
+date: "15/02/2023"
+output: html_document
+---
+Looking at the metaphlan 4 output and checking the quality of the data
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("LLNEXT/Analysis/")
+#load packages: 
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(lmerTest)
+library(foreach)
+library(ggfortify)
+library(vegan)
+library(FactoMineR)
+library(factoextra)
+library(magrittr)
+library(ggrepel)
+library(reshape2)
+library(tidyverse)
+
+```
+
+
+# IMPORTING DATASETS
+
+Here we import two data sets, one contains basic metadata and the second the microbial composition of each sample.Microbial composition has been calculated using MetaPhlan v4.0 see link for more information [<https://github.com/biobakery/MetaPhlAn>]
+
+```{r import metadata and taxa}
+metadata <- read.table("~/Desktop/LLNEXT/Analysis/metadata/old_2022/final_metadata_NEXT_25_10_2022.txt", header = T, sep = "\t", row.names = 1)
+
+taxa=read.table("~/Desktop/LLNEXT/Analysis/taxa/LLNEXT_metaphlan_4_complete_10_02_2023.txt",sep='\t', header=T, row.names = 1) 
+```
+
+# CLEANING TAXA
+
+Here clean the names of the Metaphlan file to shorten them and also remove the NCBI tax ID (don't need them at this point)
+
+```{r clean metaphlan files, echo=FALSE}
+taxa_transposed=taxa
+taxa_transposed$NCBI_tax_id=NULL
+taxa_transposed=as.data.frame(t(taxa_transposed)) #Transpose and convert into data frame
+```
+
+```{r merge with metadata file}
+row.names(taxa_transposed) <- substr(row.names(taxa_transposed), 0, 12) 
+taxa_transposed<- as.data.frame(taxa_transposed)
+taxa_transposed=taxa_transposed[row.names(taxa_transposed)%in% rownames(metadata),]
+metadata=metadata[row.names(metadata)%in% row.names(taxa_transposed),]
+#write.table(taxa_transposed, "LLNEXT_metaphlan_4_clean_15_02_2023.txt", sep = "\t", row.names = T)
+```
+
+```{r merge with metadata file}
+row.names(taxa_transposed) <- substr(row.names(taxa_transposed), 0, 12) 
+taxa_transposed<- as.data.frame(taxa_transposed)
+taxa_transposed=taxa_transposed[row.names(taxa_transposed)%in% rownames(metadata),]
+metadata=metadata[row.names(metadata)%in% row.names(taxa_transposed),]
+#write.table(taxa_transposed, "LLNEXT_metaphlan_4_clean_15_02_2023.txt", sep = "\t", row.names = T)
+```
+
+```{r extracting specific levels from taxa file and cleaning names, echo=FALSE}
+taxa_SGB=taxa_transposed
+taxa_SGB=taxa_SGB[,grep("t__",colnames(taxa_SGB))]
+colnames(taxa_SGB)=gsub(".*t__","",colnames(taxa_SGB))
+
+taxa_sp=taxa_transposed
+taxa_sp=taxa_sp[,grep("s__",colnames(taxa_sp))]
+taxa_sp=taxa_sp[,-grep("t__",colnames(taxa_sp))]
+colnames(taxa_sp)=gsub(".*s__","",colnames(taxa_sp))
+
+taxa_genus=taxa_transposed
+taxa_genus=taxa_genus[,grep("g__",colnames(taxa_genus))]
+taxa_genus=taxa_genus[,-grep("s__",colnames(taxa_genus))]
+colnames(taxa_genus)=gsub(".*g__","",colnames(taxa_genus))
+```
+
+## Summary statistics species
+
+Here we will use the same package as before (tableone()) to get the summary statistics of each species
+
+As a trick, we will convert 0 to NA's to report detection rates or prevalence of each bug. Detection of specie is coded as 0 and non-0 values
+
+```{r sp summary, warning=F, message=F}
+
+taxa_sp_na=taxa_sp
+taxa_sp_na[taxa_sp_na==0]=NA
+
+my_sp_summary=(CreateTableOne(data = taxa_sp_na[,1:20]))
+summary(my_sp_summary)
+
+my_sp_summary=(CreateTableOne(data = taxa_sp_na))
+```
+
+Check missingness
+
+```{r sp summary 2, warning=F, message=F}
+missing_sp=as.data.frame(my_sp_summary$MetaData$percentMissing)
+head(missing_sp, n = 20)
+
+```
+
+We can plot the relative abundance of a couple of species across samples
+
+```{r plot sp, warning=F, message=F}
+
+library (ggplot2)
+
+ggplot(taxa_sp, aes(Faecalibacterium_prausnitzii)) + geom_histogram() + theme_bw() + ylab ("Number of samples") + xlab ("F.prau relative abundance")
+
+ggplot(taxa_sp, aes(Escherichia_coli)) + geom_histogram() + theme_bw() + ylab ("Number of samples") + xlab ("E.coli relative abundance")
+
+ggplot(taxa_sp, aes(Escherichia_coli)) + geom_histogram() + theme_bw() + ylab ("Number of samples") + xlab ("E.coli relative abundance")
+
+```
+
+Overall we observe two things:
+
+1)  Microbiome data is zero-inflated: only few species are detected in more than 50% of the samples
+
+2)  Microbiome data is not normally distributed
+
+## Filtering microbiome data
+
+To avoid false positive associations we need an strict filtering for bacterial prevalence.
+
+Depending on the study design, we can apply filtering per condition (cases and controls).
+
+Here I would apply a rather strict threshold (bacterial present in \>20% of the samples)
+
+First let's see the overall missingness.Red line will represent the 20% threshold (everything above 80% will be removed \~1400 sp)
+
+```{r plot missing, warning=F, message=F}
+
+hist(missing_sp[,1], main = "Microbiome % of zeros", xlab = "% missingness") 
+abline(v=80,col="red",lwd=2)
+
+```
+
+Now we can apply a prevalence filter
+
+```{r filtering}
+
+#For each column we sum all values different than 0 and then we divide this value by the total number of rows. We keep those columns in which this value is higher than 0.20 (20%)
+
+taxa_sp_filt = taxa_sp[,(colSums(taxa_sp!=0)/nrow(taxa_sp))>0.00]
+#0.05: 137 species 
+taxa_genus_filt = taxa_genus[,(colSums(taxa_genus!=0)/nrow(taxa_sp))>0.01]
+
+rowSums(taxa_sp_filt)
+
+#taxa_sp_filt_W2 = taxa_sp_W2[,(colSums(taxa_sp_W2!=0)/nrow(taxa_sp_W2))>0.000]
+
+```
+
+## Visualise microbiome composition
+
+Let's check the microbial composition per sample.
+
+Plotting \>100 species is going to be messy, therefore, I will focus the top-10 most abundant species
+
+For this I have created a function, copy and paste this part
+
+```{r barplot}
+
+#Make sure you have these packages installed
+#install.packages(psych)
+#install.packages(reshape2) 
+#install.packages(ggplot2)
+
+
+barplot_tax_composition <- function(tax_level_table, category_table, top_tax_value) {
+	# Packages needed
+	library(psych)
+  library(reshape2) 
+  library(ggplot2)
+  # Merge tax_level_table with category_table file  
+	filum_groups <- merge(category_table, tax_level_table, by = "row.names")
+	filum_groups <- filum_groups[,-1]
+  # Split filum_groups table by categories      
+  split_categories <- split(filum_groups[,-1], filum_groups[,1])
+  # Save the different categories files in the global environment
+  j = 1
+  others_position = top_tax_value + 1
+  results_table <- matrix(nrow = others_position, ncol= 2 )
+  matrix_list <- list()   
+  # Loop for to calculate the mean by category
+  for (i in split_categories) {
+    # Calculate mean
+    summary_table <- describe(i)
+    # Find the rows with the highest values by the given value
+    top_tax <- summary_table[order(summary_table$mean, decreasing = T)[1:top_tax_value],]
+    # Sum values and create another category: others
+    sum_top_tax <- sum(top_tax$mean)
+    others_tax <- as.numeric((100-sum_top_tax))
+		total_mean <- cbind(top_tax$mean)
+		total_mean <- rbind(total_mean, others_tax)
+		results_table[,1] <- total_mean
+		results_table[,2] <- c(rownames(top_tax), "others")
+		nam = names(split_categories)[j]         
+		#nam <- paste("Category", j , sep = "")
+		matrix_list[[j]] <-  assign(nam, results_table)
+		j <- j + 1        
+	}
+      
+  # Change colnames from all matrix in the list
+  for (k in seq_along(matrix_list)) {
+    colnames(matrix_list[[k]]) <- c("mean","bacteria")
+  }
+  # Merge function 
+  MyMerge <- function(x, y){
+    df <- merge(x, y, by="bacteria" , all.x= TRUE, all.y= TRUE)
+  return(df)
+  }
+  # Merge the matrix saved in the matrix_list in a same table
+  composition_table <- Reduce(MyMerge, matrix_list)
+  rownames(composition_table) <- composition_table[,1]
+  composition_table <- composition_table[,-1]
+  # For loop to name the columns depending on the group/category in the composition_table  
+  colnames(composition_table)=names(split_categories)    
+  ## Stacked barplot ##
+  composition_table$bacteria = row.names(composition_table) 
+  row.names(composition_table) <- NULL
+  my_plot_table <- melt(composition_table, id.vars = "bacteria")
+  my_barplot_plot <- ggplot (my_plot_table, aes(x=variable, y=as.numeric(value))) + geom_bar (aes(fill = bacteria), stat = "identity", colour="black") + theme_classic(base_size = 22) + xlab("Group") + ylab("Relative abundance")
+  return(my_barplot_plot)
+  #return(composition_table)
+}
+```
+
+Now we can run the function
+
+```{r run barplot, warning=F, message=F}
+# We have to provide 3 arguments in this function: 
+
+# 1: Taxa table 
+# 2: A data frame with row names matching the taxa table row names and a column indicating the groups that we want to plot (case/control, CD/UC, etc.)
+# 3: the number of taxa that we want to plot (based on the mean abundance)
+
+#First I create a data frame with the diagnosis as a category 
+my_category=data.frame(ID = rownames(phenos_imputed), category=phenos_imputed$infant_feeding_mode_imputed_W2)
+rownames(my_category)=my_category$ID
+my_category$ID=NULL
+
+#I want to see the top-10 most abundance bacteria per group
+barplot_tax_composition(taxa_sp_filt, my_category, 10)
+barplot_tax_composition(taxa_genus_filt, my_category, 10)
+
+
+phenos_imputed<-phenos_imputed[phenos$Type=="infant",]
+
+phenos_imputed$Timepoint_categorical=factor(phenos_imputed$Timepoint_categorical, levels = c("W2", "M1", "M2", "M3", "M6", 'M9', "M12"))
+
+#phenos_imputed_W2<-phenos_imputed[phenos$Timepoint_categorical=="W2",]
+
+  
+#Same but with disease location
+my_category=data.frame(ID = rownames(phenos_imputed), category=phenos_imputed$Timepoint_categorical)
+rownames(my_category)=my_category$ID
+my_category$ID=NULL
+barplot_tax_composition(taxa_sp_filt, my_category, 10)
+
+```
