@@ -32,7 +32,6 @@ echo -e '\n---- Preparing mapping file for '${SAMPLE_ID}' SAMPLE ----'
 # Clean environment, load environment 
 module purge; module load Bowtie2 SAMtools; module list
 
-
 bowtie2-build ${contig_dir}/${SAMPLE_ID}_metaspades_scaffolds.fa ${SAMPLE_ID}
 
 bowtie2 \
