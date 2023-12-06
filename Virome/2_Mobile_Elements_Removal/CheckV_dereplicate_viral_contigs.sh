@@ -5,7 +5,7 @@
 #SBATCH --time=00:59:00
 #SBATCH --cpus-per-task=16
 #SBATCH --open-mode=truncate
-#SBATCH --partition=himem
+#SBATCH --partition=regular
 
 contig_file=$1 #path to FASTA file with predicted viral contigs
 contig_file_name="$(basename "${contig_file}")" #extract filename
