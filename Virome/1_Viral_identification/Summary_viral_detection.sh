@@ -61,4 +61,4 @@ cat ${batch}/${batch}_results_summary.txt | awk '$2 == "yes" && $3 == "yes" && $
 grep -Fxvf  ${batch}/${batch}_completed_samples.txt <(cat ${batch}/${batch}_results_summary.txt | cut -f1) > ${batch}/${batch}_failed_samples.txt
 
 # Add header to results file
-sed -i $'1 i\\\nSample\tVS2_finish\tVS2_file\tVS2_contigs\tDVF_finish\tDVF_file\tDVF_Contigs p<0.01 & score>=0.95 \tErrors' ${batch}/${batch}_results_summary.txtSummary_viral_detection
+sed -i $'1 i\\\nSample\tVS2_finish\tVS2_file\tVS2_contigs\tDVF_finish\tDVF_file\tDVF_Contigs p<0.01 & score>=0.95 \tErrors' ${batch}/${batch}_results_summary.txt
