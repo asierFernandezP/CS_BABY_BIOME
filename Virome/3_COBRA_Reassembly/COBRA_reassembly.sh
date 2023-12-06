@@ -36,13 +36,13 @@ module purge; module load Bowtie2 SAMtools; module list
 bowtie2-build ${contig_dir}/${SAMPLE_ID}_metaspades_scaffolds.fa ${SAMPLE_ID}
 
 bowtie2 \
-	--very-sensitive \
-	-x ${SAMPLE_ID} \
-	-1 ${FASTQ_dir}/${SAMPLE_ID}_kneaddata_paired_1.fastq.gz \
-	-2 ${FASTQ_dir}/${SAMPLE_ID}_kneaddata_paired_2.fastq.gz \
-	--no-unal \
-	--threads ${SLURM_CPUS_PER_TASK} \
-	-S 3_COBRA/SAM_files/${SAMPLE_ID}.sam 
+    --very-sensitive \
+    -x ${SAMPLE_ID} \
+    -1 ${FASTQ_dir}/${SAMPLE_ID}_kneaddata_paired_1.fastq.gz \
+    -2 ${FASTQ_dir}/${SAMPLE_ID}_kneaddata_paired_2.fastq.gz \
+    --no-unal \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -S 3_COBRA/SAM_files/${SAMPLE_ID}.sam 
 
 samtools view -bS 3_COBRA/SAM_files/${SAMPLE_ID}.sam  > 3_COBRA/BAM_files/${SAMPLE_ID}.bam
 samtools sort -o 3_COBRA/BAM_files/${SAMPLE_ID}_sorted.bam 3_COBRA/BAM_files/${SAMPLE_ID}.bam
