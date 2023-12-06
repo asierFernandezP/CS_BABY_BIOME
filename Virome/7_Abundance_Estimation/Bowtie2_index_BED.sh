@@ -25,4 +25,5 @@ module purge; ml bioawk/1.0-GCC-11.2.0; module list
 # Generate BED file
 bioawk -c fastx '{print $name"\t0\t"length($seq)}' $viral_rep_seqs > Viral_rep_seqs_DB.bed
 
+# Change permissions
 chmod 440 Viral_rep_seqs_DB.bed
