@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --export=NONE
 #SBATCH --open-mode=truncate
-#SBATCH --partition=himem
+#SBATCH --partition=regular
 
 viral_rep_seqs=$1 # FASTA file with all the vOTUs representative viral sequences
 
