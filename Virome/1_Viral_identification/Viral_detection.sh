@@ -2,11 +2,11 @@
 #SBATCH --job-name=Viral_detection_CS_Baby_Biome
 #SBATCH --output=Viral_detection_CS_%A_%a.out
 #SBATCH --mem=16gb
-#SBATCH --time=16:59:00
+#SBATCH --time=05:59:00
 #SBATCH --cpus-per-task=16
 #SBATCH --export=NONE
 #SBATCH --open-mode=truncate
-#SBATCH --partition=himem
+#SBATCH --partition=regular
 
 sample_dir=$1 #directory with the metaSPADEs scaffolds
 sample_list=${sample_dir}$2 #file with the list of all samples in the directory
