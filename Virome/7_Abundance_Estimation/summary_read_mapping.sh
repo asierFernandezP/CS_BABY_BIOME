@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --export=NONE
 #SBATCH --open-mode=truncate
-#SBATCH --partition=himem
+#SBATCH --partition=regular
 
 viral_genomes=$1 # file with the names of representative viral genomes
 samples=$2 # file with sample names
