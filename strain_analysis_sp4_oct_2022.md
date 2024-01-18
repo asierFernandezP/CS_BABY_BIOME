@@ -1,9 +1,9 @@
-# Strainphlan 4.0 analysis Lifelines NEXT 
+# Strainphlan 4.0 analysis 
 
 Adapted from Biobakery (StrainPhlAn 4.0). 
 https://github.com/biobakery/MetaPhlAn/wiki/StrainPhlAn-4
 
-Authors: Trishla Sinha, Ranko Gascesa,
+Authors: Trishla Sinha
 Description: The script shows how strain profiling was performed using Strainphlan 4 for all maternal and infant samples post QC, for all species.   
 Languages: Bash and R.   
 
@@ -16,8 +16,8 @@ https://github.com/GRONINGEN-MICROBIOME-CENTRE/gmc-mgs-pipeline/blob/main/GMH_pi
 ```
 #!/bin/bash
 
-#SBATCH --mem=24gb
-#SBATCH --time=0-07:59:59
+#SBATCH --mem=14gb
+#SBATCH --time=6-23:30:00
 #SBATCH --cpus-per-task=4
 #SBATCH --open-mode=truncate
 #SBATCH --job-name=SP4pr
@@ -31,18 +31,18 @@ https://github.com/GRONINGEN-MICROBIOME-CENTRE/gmc-mgs-pipeline/blob/main/GMH_pi
 # Removing the --print_clades only will actually run it 
 
 # PARAMS
-N=1 # --marker_in_n_samples
+N=10 # --marker_in_n_samples
 S=10 # --sample_with_n_markers
-DB=/data/umcg-tifn/rgacesa/conda_biobakery4/lib/python3.10/site-packages/metaphlan/metaphlan_databases/mpa_vJan21_CHOCOPhlAnSGB_202103/mpa_vJan21_CHOCOPhlAnSGB_202103.pkl 
+DB=/scratch/hb-tifn/condas/conda_biobakery4/lib/python3.9/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.pkl
 
 # purge modules
 module purge
 # load conda
-ml Miniconda3/4.8.3
+ml Anaconda3/2022.05
 # load conda env
-source activate /data/umcg-tifn/rgacesa/conda_biobakery4
+source activate /scratch/hb-tifn/condas/conda_biobakery4/
 # run clade profiling
-strainphlan -s *.pkl --database /data/umcg-tifn/rgacesa/conda_biobakery4/lib/python3.10/site-packages/metaphlan/metaphlan_databases/mpa_vJan21_CHOCOPhlAnSGB_202103/mpa_vJan21_CHOCOPhlAnSGB_202103.pkl --marker_in_n_samples ${N} --sample_with_n_markers ${S} --print_clades_only --phylophlan_mode accurate --output_dir . > strainphlan4_clades_${N}.txt
+strainphlan -s *.pkl --database /scratch/hb-tifn/condas/conda_biobakery4/lib/python3.9/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.pkl --marker_in_n_samples ${N} --sample_with_n_markers ${S} --print_clades_only --phylophlan_mode accurate --output_dir . > strainphlan4_clades_${N}.txt
 
 ```
 ### Execution 
