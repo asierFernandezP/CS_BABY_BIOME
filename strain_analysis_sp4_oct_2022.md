@@ -146,14 +146,14 @@ fi
 N=4 # --marker_in_n_samples
 S=10 # --sample_with_n_markers 
 MODE=accurate # {accurate,fast}
-CONDA=/data/umcg-tifn/rgacesa/conda_biobakery4
+CONDA=/scratch/hb-tifn/condas/conda_biobakery4/
 #CM= # clade markers
 
 # purge modules
 module purge
 
 # load conda
-ml Miniconda3/4.8.3
+ml Anaconda3/2022.05   
 # load conda env
 source deactivate
 source activate ${CONDA}
@@ -162,7 +162,8 @@ source activate ${CONDA}
 mkdir ${2}
 # run strainphlan for that clade
 echo "strainphlan -s ${1}/*.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --nprocs 8 --phylophlan_mode ${MODE}"
-strainphlan -s ${1}/*.pkl --database /scratch/hb-tifn/condas/conda_biobakery4/lib/python3.9/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --nprocs 8 --phylophlan_mode ${MODE} #--tmp ${OUT_TMP}
+strainphlan -s ${1}/*.pkl --database /scratch/hb-tifn/condas/conda_biobakery4/lib/python3.9/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --$
+
 
 ```
 
