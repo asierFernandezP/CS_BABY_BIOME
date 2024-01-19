@@ -51,45 +51,69 @@ strainphlan -s *.pkl --database /scratch/hb-tifn/condas/conda_biobakery4/lib/pyt
 sbatch ./profileClades.sh 
 
 ```
-Mon Mar 20 17:47:58 2023: Start StrainPhlAn 4.0.6 execution
-Mon Mar 20 17:47:58 2023: Loading MetaPhlAn mpa_vJan21_CHOCOPhlAnSGB_202103 database...
-Mon Mar 20 17:48:20 2023: Done.
-Mon Mar 20 17:48:23 2023: Detecting clades...
-Mon Mar 20 18:40:14 2023: Done.
-Mon Mar 20 18:40:14 2023: Detected clades: 
-Mon Mar 20 18:40:14 2023:       t__SGB10068: in 103 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB8007_group: in 86 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB6936: in 82 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB17248: in 77 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB6952: in 74 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB6939: in 73 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB9712_group: in 60 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB10120: in 58 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB10115: in 58 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB17247: in 56 samples.
-Mon Mar 20 18:40:14 2023:       t__SGB7962: in 55 samples.
+Thu Jan 18 22:10:03 2024: Start StrainPhlAn 4.0.6 execution
+Thu Jan 18 22:10:03 2024: Loading MetaPhlAn mpa_vOct22_CHOCOPhlAnSGB_202212 database...
+Thu Jan 18 22:10:24 2024: Done.
+Thu Jan 18 22:10:27 2024: Detecting clades...
+Thu Jan 18 23:42:37 2024: Done.
+Thu Jan 18 23:42:38 2024: Detected clades: 
+Thu Jan 18 23:42:38 2024:       t__SGB10068: in 168 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB17248: in 163 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB6939: in 112 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB17247: in 101 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB6952: in 95 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB6936: in 94 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB17256: in 87 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB7962: in 75 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB1814: in 74 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB17244_group: in 72 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB1836: in 71 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB1934: in 69 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB17234: in 69 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB14535_group: in 67 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB8007_group: in 65 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB10119: in 65 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB9663_group: in 61 samples.
+Thu Jan 18 23:42:38 2024:       t__SGB4933: in 57 samples.
+
 
 
 We next process this output file to select only the clade names
 
 ```
-cat strainphlan4_clades_1.txt | grep t__ | cut -f 2 | cut -f 1 -d ':' > LLNEXT_sp_clades_names.txt
+cat  strainphlan4_clades_10.txt | grep t__ | cut -f 2 | cut -f 1 -d ':' > CS_Baby_Biome_clade_names_Oct_2022_db.txt
 
 ```
 
 This will give us the names of each species found: 
 t__SGB10068
-t__SGB8007_group
-t__SGB6936
 t__SGB17248
-t__SGB6952
 t__SGB6939
-t__SGB9712_group
-t__SGB10120
-t__SGB10115
 t__SGB17247
-t__S6_group
+t__SGB6952
+t__SGB6936
+t__SGB17256
+t__SGB7962
+t__SGB1814
+t__SGB17244_group
+t__SGB1836
+t__SGB1934
+t__SGB17234
+t__SGB14535_group
+t__SGB8007_group
+t__SGB10119
+t__SGB9663_group
+t__SGB4933
+t__SGB10120
+t__SGB1877
+t__SGB15316
+t__SGB15132
+t__SGB4837
+t__SGB2318
 t__SGB2303
+t__SGB15254
+t__SGB4874
+
 
 
 ## Step 3: Build the multiple sequence alignment (sp4_runMarkerComparison.sh)
@@ -138,14 +162,14 @@ source activate ${CONDA}
 mkdir ${2}
 # run strainphlan for that clade
 echo "strainphlan -s ${1}/*.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --nprocs 8 --phylophlan_mode ${MODE}"
-strainphlan -s ${1}/*.pkl --database /data/umcg-tifn/rgacesa/conda_biobakery4/lib/python3.10/site-packages/metaphlan/metaphlan_databases/mpa_vJan21_CHOCOPhlAnSGB_202103/mpa_vJan21_CHOCOPhlAnSGB_202103.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --nprocs 8 --phylophlan_mode ${MODE} #--tmp ${OUT_TMP}
+strainphlan -s ${1}/*.pkl --database /scratch/hb-tifn/condas/conda_biobakery4/lib/python3.9/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.pkl --output_dir ./${2} --clade ${2} --marker_in_n_samples ${N} --sample_with_n_markers ${S} --nprocs 8 --phylophlan_mode ${MODE} #--tmp ${OUT_TMP}
 
 ```
 
 ### Execution
 
 ```
-for i in $(cat CS_BABY_BIOME_clades_names.txt); do sbatch sp4_runMarkerComparison.sh  /scratch/umcg-tsinha/strainphlan_4_CS_BABY_BIOME $i; done
+for i in $(cat CS_Baby_Biome_clade_names_Oct_2022_db.txt); do sbatch sp4_runMarkerComparison.sh  /scratch/p280306/CS_BABY_BIOME_AMS_NEXT/biobakery_oct_2022_results_CS_Baby_Biome_2024/strainphlan4 $i; done
 ```
 Where CS_BABY_BIOME_clades_names.txt contains a list of names of all (sub) species identified in the previous step 
 This will perform MSA and create .tre files and .aln files for each of the (sub)species you feed it in 
